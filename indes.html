@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tri-State & NWA Vendor Management & Marketplace SaaS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            600: '#8B4513', /* SaddleBrown / Antique Theme */
+                            700: '#6f370f',
+                            800: '#53290b',
+                            900: '#3c1e08'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased" x-data="appState()">
+
+    <!-- TOP GLOBAL ROLE SWITCHER BAR -->
+    <header class="bg-gray-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-600 text-white p-2 rounded-lg font-bold text-lg shadow">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide">Wandat Labs ERP & Marketplace</h1>
+                    <p class="text-xs text-gray-400">Tri-State & Northwest Arkansas Regional Corridor (33 Facilities)</p>
+                </div>
+            </div>
+
+            <!-- Role Switcher Control -->
+            <div class="flex items-center bg-gray-800 p-1.5 rounded-xl border border-gray-700">
+                <span class="text-xs font-semibold text-gray-400 px-3 uppercase tracking-wider">Active Role:</span>
+                <div class="flex space-x-1">
+                    <button @click="currentRole = 'customer'" :class="currentRole === 'customer' ? 'bg-brand-600 text-white shadow' : 'text-gray-300 hover:text-white'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                        <i class="fa-solid fa-compass mr-1"></i> Customer
+                    </button>
+                    <button @click="currentRole = 'vendor'" :class="currentRole === 'vendor' ? 'bg-brand-600 text-white shadow' : 'text-gray-300 hover:text-white'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                        <i class="fa-solid fa-shop mr-1"></i> Vendor
+                    </button>
+                    <button @click="currentRole = 'facility'" :class="currentRole === 'facility' ? 'bg-brand-600 text-white shadow' : 'text-gray-300 hover:text-white'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                        <i class="fa-solid fa-cash-register mr-1"></i> Facility Admin
+                    </button>
+                    <button @click="currentRole = 'global'" :class="currentRole === 'global' ? 'bg-brand-600 text-white shadow' : 'text-gray-300 hover:text-white'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                        <i class="fa-solid fa-globe mr-1"></i> Global Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- ========================================== -->
+        <!-- 1. CUSTOMER PORTAL VIEW -->
+        <!-- ========================================== -->
+        <div x-show="currentRole === 'customer'" x-cloak class="space-y-6">
+            <!-- Customer Mode & Header -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Regional Antique & Vendor Discovery</h2>
+                    <p class="text-sm text-gray-500">Explore 33 facilities, browse live feeds, and build your daily shopping route.</p>
+                </div>
+                <!-- Mode Toggle -->
+                <div class="flex items-center bg-gray-100 p-1 rounded-xl">
+                    <button @click="customerMode = 'hunter'" :class="customerMode === 'hunter' ? 'bg-brand-600 text-white shadow' : 'text-gray-600'" class="px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        <i class="fa-solid fa-crosshairs mr-1"></i> Treasure Hunter
+                    </button>
+                    <button @click="customerMode = 'browser'" :class="customerMode === 'browser' ? 'bg-brand-600 text-white shadow' : 'text-gray-600'" class="px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        <i class="fa-solid fa-binoculars mr-1"></i> Casual Browser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Customer Tabs -->
+            <div class="flex border-b border-gray-200 space-x-6">
+                <button @click="customerTab = 'facilities'" :class="customerTab === 'facilities' ? 'border-brand-600 text-brand-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'" class="pb-3 border-b-2 text-sm transition">
+                    <i class="fa-solid fa-map-location-dot mr-1"></i> Facilities & Route Planner
+                </button>
+                <button @click="customerTab = 'feed'" :class="customerTab === 'feed' ? 'border-brand-600 text-brand-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'" class="pb-3 border-b-2 text-sm transition">
+                    <i class="fa-solid fa-newspaper mr-1"></i> Live Vendor Feed & Drops
+                </button>
+                <button @click="customerTab = 'pass'" :class="customerTab === 'pass' ? 'border-brand-600 text-brand-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'" class="pb-3 border-b-2 text-sm transition">
+                    <i class="fa-solid fa-ticket mr-1"></i> My Route Pass & Badges
+                </button>
+            </div>
+
+            <!-- Facilities & Route Planner Tab -->
+            <div x-show="customerTab === 'facilities'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                        <h3 class="font-bold text-lg mb-3">Regional Facilities Directory (33 Mapped)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <template x-for="fac in facilities" :key="fac.id">
+                                <div class="border rounded-xl p-4 hover:shadow-md transition flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="font-bold text-gray-900" x-text="fac.name"></h4>
+                                            <span class="text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium" x-text="fac.city + ', ' + fac.state"></span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1" x-text="fac.address"></p>
+                                        <div class="mt-3 flex items-center justify-between text-xs text-gray-600">
+                                            <span><i class="fa-solid fa-store mr-1"></i> <span x-text="fac.booths"></span> Booths</span>
+                                            <span><i class="fa-solid fa-clock mr-1"></i> <span x-text="fac.hours"></span></span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 pt-3 border-t flex justify-between items-center">
+                                        <button @click="toggleRouteStop(fac)" :class="routeStops.includes(fac.id) ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                            <i :class="routeStops.includes(fac.id) ? 'fa-solid fa-check mr-1' : 'fa-solid fa-plus mr-1'"></i>
+                                            <span x-text="routeStops.includes(fac.id) ? 'Added to Route' : 'Add to Route'"></span>
+                                        </button>
+                                        <span class="text-xs text-brand-600 font-medium cursor-pointer" @click="selectedFacilityModal = fac">View Inventory <i class="fa-solid fa-arrow-right ml-0.5"></i></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Route Drawer -->
+                <div class="space-y-4">
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 sticky top-20">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg"><i class="fa-solid fa-route text-brand-600 mr-2"></i> My Shopping Route</h3>
+                            <span class="text-xs bg-gray-100 px-2.5 py-1 rounded-full font-semibold" x-text="routeStops.length + ' Stops'"></span>
+                        </div>
+                        <template x-if="routeStops.length === 0">
+                            <p class="text-sm text-gray-500 italic py-6 text-center">No facilities added to your route yet. Click "Add to Route" on any facility.</p>
+                        </template>
+                        <div class="space-y-3">
+                            <template x-for="(stopId, index) in routeStops" :key="stopId">
+                                <div class="flex items-center justify-between p-3 bg-brand-50 rounded-xl border border-brand-100">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold" x-text="index + 1"></span>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-gray-900" x-text="getFacility(stopId).name"></h4>
+                                            <p class="text-xs text-gray-500" x-text="getFacility(stopId).city"></p>
+                                        </div>
+                                    </div>
+                                    <button @click="routeStops = routeStops.filter(id => id !== stopId)" class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="mt-5 pt-4 border-t">
+                            <button @click="customerTab = 'pass'" :disabled="routeStops.length === 0" class="w-full bg-brand-600 text-white py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 disabled:opacity-50 transition">
+                                Generate Route Pass & Coupons <i class="fa-solid fa-qrcode ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Vendor Feed Tab -->
+            <div x-show="customerTab === 'feed'" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-lg">Live Vendor Feeds & Flash Drops</h3>
+                    <div class="text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
+                        <i class="fa-solid fa-circle text-[8px] text-green-600 mr-1 animate-pulse"></i> Live Real-Time Sync Active
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <template x-for="post in vendorFeeds" :key="post.id">
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200 flex flex-col justify-between">
+                            <div>
+                                <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs" x-text="post.vendor[0]"></div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-900" x-text="post.vendor"></h4>
+                                            <p class="text-[10px] text-gray-500" x-text="post.booth"></p>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold" x-text="post.tag"></span>
+                                </div>
+                                <div class="p-4">
+                                    <p class="text-sm text-gray-700 mb-3" x-text="post.content"></p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <template x-for="img in post.images">
+                                            <div class="h-28 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center text-gray-400 text-xs">
+                                                <i class="fa-solid fa-image text-lg"></i>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
+                                <span class="text-xs font-bold text-brand-600" x-text="post.price"></span>
+                                <button @click="alert('Added to your digital Watchlist & Route!')" class="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-semibold shadow hover:bg-brand-700 transition">
+                                    <i class="fa-solid fa-bookmark mr-1"></i> Watch Item
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Route Pass & Badges Tab -->
+            <div x-show="customerTab === 'pass'" class="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 max-w-2xl mx-auto text-center space-y-6">
+                <div class="inline-block p-3 bg-brand-50 rounded-2xl text-brand-600">
+                    <i class="fa-solid fa-qrcode text-4xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900">Tri-State Treasure Hunter Pass</h3>
+                    <p class="text-sm text-gray-500 mt-1">Scan this pass at any facility POS checkout to log your route visit and unlock vendor coupon discounts.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-300 flex flex-col items-center justify-center space-y-3">
+                    <div class="w-48 h-48 bg-white p-4 rounded-xl shadow border flex items-center justify-center">
+                        <i class="fa-solid fa-qrcode text-8xl text-gray-900"></i>
+                    </div>
+                    <span class="text-xs font-mono text-gray-500">PASS-ID: WANDAT-TRISATE-8842-X</span>
+                </div>
+                <div class="grid grid-cols-3 gap-4 pt-4 border-t text-left">
+                    <div class="bg-gray-50 p-4 rounded-xl border">
+                        <i class="fa-solid fa-medal text-brand-600 text-lg mb-1"></i>
+                        <h4 class="text-xs font-bold">Explorer Badge</h4>
+                        <p class="text-[10px] text-gray-500">Unlocked 3 Facilities</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl border">
+                        <i class="fa-solid fa-percent text-green-600 text-lg mb-1"></i>
+                        <h4 class="text-xs font-bold">Active Coupons</h4>
+                        <p class="text-[10px] text-gray-500">3 Vendor Discounts Ready</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl border">
+                        <i class="fa-solid fa-star text-amber-500 text-lg mb-1"></i>
+                        <h4 class="text-xs font-bold">VIP Tier</h4>
+                        <p class="text-[10px] text-gray-500">Treasure Hunter Mode</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 2. VENDOR PORTAL VIEW -->
+        <!-- ========================================== -->
+        <div x-show="currentRole === 'vendor'" x-cloak class="space-y-6">
+            <!-- Vendor Header & Workspace Toggle -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 bg-brand-600 text-white rounded-2xl flex items-center justify-center text-xl font-bold shadow">
+                        <i class="fa-solid fa-shop"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-xl font-bold text-gray-900">Little Turtle Antiques & Collectibles</h2>
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-semibold">Storefront Pro ($29/mo)</span>
+                        </div>
+                        <p class="text-xs text-gray-500">Primary Contact: Travis J. Griffin, MPA | Tax ID: XXX-XX-8842</p>
+                    </div>
+                </div>
+
+                <!-- Multi-Booth Workspace Toggle -->
+                <div class="flex items-center space-x-2 bg-gray-50 p-2 rounded-xl border">
+                    <span class="text-xs font-semibold text-gray-500"><i class="fa-solid fa-toggle-on mr-1"></i> Active Workspace:</span>
+                    <select x-model="activeBoothWorkspace" class="bg-white border rounded-lg px-3 py-1.5 text-xs font-bold text-brand-700 shadow-sm">
+                        <option value="joplin_12">Booth #12 - Rangeline Antique Mall (Joplin)</option>
+                        <option value="carthage_04">Booth #4 - Carthage Square Antiques</option>
+                        <option value="rogers_88">Booth #88 - Rose Antique Mall (Rogers, AR)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Vendor Tabs -->
+            <div class="flex border-b border-gray-200 space-x-6">
+                <button @click="vendorTab = 'inventory'" :class="vendorTab === 'inventory' ? 'border-brand-600 text-brand-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'" class="pb-3 border-b-2 text-sm transition">
+                    <i class="fa-solid fa-boxes-stacked mr-1"></i> Store Inventory & Template
+                </button>
+                <button @click="vendorTab = 'feed'" :class="vendorTab === 'feed' ? 'border-brand-600 text-brand-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'" class="pb-3 border-b-2 text-sm transition">
+                    <i class="fa-solid fa-bullhorn mr-1"></i> Vendor Feed & Blasts
+                </button>
+                <button @click="vendorTab = 'reports'" :class="vendorTab === 'reports' ? 'border-brand-600 text-brand-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'" class="pb-3 border-b-2 text-sm transition">
+                    <i class="fa-solid fa-chart-line mr-1"></i> Reports & P&L Statement
+                </button>
+            </div>
+
+            <!-- Inventory & Template Tab -->
+            <div x-show="vendorTab === 'inventory'" class="space-y-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="font-bold text-lg">Add / Edit Inventory Template</h3>
+                            <p class="text-xs text-gray-500">Storefront Pro tier enabled: Up to 4 images, Circa dropdown, and private P&L cost tracking.</p>
+                        </div>
+                        <button @click="saveInventoryItem()" class="bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow hover:bg-brand-700 transition">
+                            <i class="fa-solid fa-plus mr-1"></i> Save to Store Inventory & Print Barcode
+                        </button>
+                    </div>
+
+                    <!-- Inventory Form Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-4 md:col-span-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Product Name</label>
+                                    <input type="text" x-model="newInventory.name" placeholder="e.g. 19th Century Cast Iron Skillet" class="w-full border rounded-xl px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Product Type</label>
+                                    <select x-model="newInventory.type" class="w-full border rounded-xl px-3 py-2 text-sm">
+                                        <option>Antique</option>
+                                        <option>Collectible</option>
+                                        <option>Home Goods</option>
+                                        <option>Furniture</option>
+                                        <option>Tools & Hardware</option>
+                                        <option>Handmade & Artisanal Craft</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Circa / Era</label>
+                                    <select x-model="newInventory.circa" class="w-full border rounded-xl px-3 py-2 text-sm">
+                                        <option>Pre 1800</option>
+                                        <option>1800's</option>
+                                        <option>1900's</option>
+                                        <option>1920's</option>
+                                        <option>1930's</option>
+                                        <option>1940's</option>
+                                        <option>1950's</option>
+                                        <option>1960's</option>
+                                        <option>1970's</option>
+                                        <option>1980's</option>
+                                        <option>1990's</option>
+                                        <option>2000's</option>
+                                        <option>Unknown</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Retail Price ($)</label>
+                                    <input type="number" x-model="newInventory.price" placeholder="45.00" class="w-full border rounded-xl px-3 py-2 text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Product Description (200 Character Limit)</label>
+                                <textarea x-model="newInventory.description" maxlength="200" rows="2" placeholder="Clean vintage condition, minor seasoning wear..." class="w-full border rounded-xl px-3 py-2 text-sm"></textarea>
+                                <span class="text-[10px] text-gray-400">200 characters max</span>
+                            </div>
+
+                            <!-- Private P&L Cost Tracking -->
+                            <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-3">
+                                <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider"><i class="fa-solid fa-lock mr-1"></i> Vendor-Only Cost Tracking (For P&L Reports)</h4>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 mb-1">Purchase Price ($)</label>
+                                        <input type="number" x-model="newInventory.cost" placeholder="15.00" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 mb-1">Sales Tax Paid ($)</label>
+                                        <input type="number" x-model="newInventory.taxPaid" placeholder="1.25" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 mb-1">Purchase Date</label>
+                                        <input type="date" x-model="newInventory.purchaseDate" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload Slots (Up to 4) & Barcode Preview -->
+                        <div class="space-y-4">
+                            <label class="block text-xs font-bold text-gray-700">Product Images (Up to 4)</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="h-28 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 text-xs bg-gray-50 hover:bg-gray-100 cursor-pointer">
+                                    <i class="fa-solid fa-camera mb-1"></i> Image 1
+                                </div>
+                                <div class="h-28 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 text-xs bg-gray-50">
+                                    <i class="fa-solid fa-plus"></i> Image 2
+                                </div>
+                                <div class="h-28 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 text-xs bg-gray-50">
+                                    <i class="fa-solid fa-plus"></i> Image 3
+                                </div>
+                                <div class="h-28 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 text-xs bg-gray-50">
+                                    <i class="fa-solid fa-plus"></i> Image 4
+                                </div>
+                            </div>
+
+                            <!-- System Generated 0.5" x 0.5" Barcode Preview -->
+                            <div class="p-4 bg-gray-900 text-white rounded-xl text-center space-y-2">
+                                <span class="text-[10px] text-gray-400 uppercase tracking-wider">System Barcode Tag (0.5" x 0.5")</span>
+                                <div class="bg-white p-2 rounded text-gray-900 font-mono text-[10px] flex flex-col items-center">
+                                    <i class="fa-solid fa-barcode text-3xl"></i>
+                                    <span>[JPL-12-SKU884]</span>
+                                    <span class="font-bold text-xs">$45.00</span>
+                                </div>
+                                <button class="w-full bg-brand-600 text-white py-1.5 rounded-lg text-xs font-semibold shadow hover:bg-brand-700">
+                                    <i class="fa-solid fa-print mr-1"></i> Print Thermal Tag
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing Inventory List -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-lg mb-4">Current Inventory Items (Booth Workspace: <span class="text-brand-600" x-text="activeBoothWorkspace"></span>)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="bg-gray-50 border-b text-gray-500 uppercase tracking-wider">
+                                    <th class="p-3">Item Name</th>
+                                    <th class="p-3">Type</th>
+                                    <th class="p-3">Circa</th>
+                                    <th class="p-3">Price</th>
+                                    <th class="p-3">Cost (P&L)</th>
+                                    <th class="p-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <template x-for="item in vendorInventory" :key="item.id">
+                                    <tr>
+                                        <td class="p-3 font-bold text-gray-900" x-text="item.name"></td>
+                                        <td class="p-3" x-text="item.type"></td>
+                                        <td class="p-3" x-text="item.circa"></td>
+                                        <td class="p-3 font-bold text-brand-600" x-text="item.price"></td>
+                                        <td class="p-3 text-gray-500" x-text="item.cost"></td>
+                                        <td class="p-3 space-x-2">
+                                            <button @click="transferModalItem = item" class="text-brand-600 hover:underline font-semibold"><i class="fa-solid fa-right-left mr-0.5"></i> Transfer</button>
+                                            <button class="text-red-600 hover:underline"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendor Feed & Blasts Tab -->
+            <div x-show="vendorTab === 'feed'" class="space-y-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-lg mb-3">Publish to Personal Feed & Broadcast</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Broadcast Message / Flash Drop Announcement</label>
+                            <textarea x-model="newBlastContent" rows="3" placeholder="Just dropped 5 brand new pieces of mid-century furniture and cast iron cookware! Come check them out at Booth #12 this weekend..." class="w-full border rounded-xl px-3 py-2 text-sm"></textarea>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-3">
+                                <label class="text-xs font-bold text-gray-700">Attach Coupon:</label>
+                                <select class="border rounded-lg px-3 py-1.5 text-xs">
+                                    <option>No Coupon</option>
+                                    <option>10% Off Entire Booth</option>
+                                    <option>$5 Off Specific Item</option>
+                                </select>
+                            </div>
+                            <button @click="publishBlast()" class="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow hover:bg-brand-700 transition">
+                                <i class="fa-solid fa-paper-plane mr-1"></i> Broadcast to Followers
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports & P&L Tab -->
+            <div x-show="vendorTab === 'reports'" class="space-y-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-lg">Automated Profit & Loss (P&L) Statement</h3>
+                        <button onclick="window.print()" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200">
+                            <i class="fa-solid fa-file-pdf mr-1"></i> Export PDF Report
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-brand-50 p-4 rounded-xl border border-brand-100">
+                            <span class="text-xs text-brand-700 font-semibold">Gross Sales Revenue</span>
+                            <h4 class="text-2xl font-bold text-brand-900 mt-1">$2,450.00</h4>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-xl border">
+                            <span class="text-xs text-gray-500 font-semibold">Total Cost of Goods Sold</span>
+                            <h4 class="text-2xl font-bold text-gray-900 mt-1">$820.00</h4>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                            <span class="text-xs text-green-700 font-semibold">Net P&L Profit</span>
+                            <h4 class="text-2xl font-bold text-green-800 mt-1">$1,630.00</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 3. FACILITY ADMIN PORTAL VIEW -->
+        <!-- ========================================== -->
+        <div x-show="currentRole === 'facility'" x-cloak class="space-y-6">
+            <!-- Facility Header -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Rangeline Antique Mall & Vendor Co-op</h2>
+                    <p class="text-sm text-gray-500">Facility Admin Portal | Joplin, MO | 120 Total Booths</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs bg-brand-50 text-brand-700 px-3 py-1 rounded-full font-semibold">Subscription: Professional ($299/mo)</span>
+                </div>
+            </div>
+
+            <!-- Facility Tabs -->
+            <div class="flex border-b border-gray-200 space-x-6">
+                <button @click="facilityTab = 'pos'" :class="facilityTab === 'pos' ? 'border-brand-600 text-brand-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'" class="pb-3 border-b-2 text-sm transition">
+                    <i class="fa-solid fa-cash-register mr-1"></i> POS Checkout & Scanner Simulator
+                </button>
+                <button @click="facilityTab = 'vendors'" :class="facilityTab === 'vendors' ? 'border-brand-600 text-brand-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'" class="pb-3 border-b-2 text-sm transition">
+                    <i class="fa-solid fa-users-rectangle mr-1"></i> Vendor Onboarding & Leases
+                </button>
+            </div>
+
+            <!-- POS Checkout Simulator Tab -->
+            <div x-show="facilityTab === 'pos'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4">
+                        <h3 class="font-bold text-lg"><i class="fa-solid fa-barcode text-brand-600 mr-2"></i> POS Register Terminal</h3>
+                        <div class="flex space-x-3">
+                            <input type="text" x-model="posScanInput" placeholder="Scan or enter item barcode (e.g. JPL-12-SKU884)..." class="flex-1 border rounded-xl px-4 py-3 text-sm font-mono shadow-sm">
+                            <button @click="simulateScan()" class="bg-brand-600 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition">
+                                Scan Item
+                            </button>
+                        </div>
+                        <div class="border rounded-xl overflow-hidden">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-gray-50 border-b text-gray-500 uppercase">
+                                    <tr>
+                                        <th class="p-3">Item</th>
+                                        <th class="p-3">Booth #</th>
+                                        <th class="p-3">Price</th>
+                                        <th class="p-3">Commission</th>
+                                        <th class="p-3">Rent Deduction</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <template x-for="cartItem in posCart" :key="cartItem.id">
+                                        <tr>
+                                            <td class="p-3 font-bold" x-text="cartItem.name"></td>
+                                            <td class="p-3 text-brand-600 font-bold" x-text="cartItem.booth"></td>
+                                            <td class="p-3 font-bold" x-text="'$' + cartItem.price.toFixed(2)"></td>
+                                            <td class="p-3 text-gray-500" x-text="'-$' + (cartItem.price * 0.10).toFixed(2)"></td>
+                                            <td class="p-3 text-gray-500">Auto-Deducted</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- POS Register Totals & Checkout -->
+                <div class="space-y-4">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4 sticky top-20">
+                        <h3 class="font-bold text-lg">Checkout Summary</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Subtotal:</span>
+                                <span class="font-bold" x-text="'$' + posSubtotal.toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Sales Tax (Local):</span>
+                                <span class="font-bold" x-text="'$' + (posSubtotal * 0.0825).toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between pt-3 border-t text-base font-bold">
+                                <span>Total Due:</span>
+                                <span class="text-brand-600" x-text="'$' + (posSubtotal * 1.0825).toFixed(2)"></span>
+                            </div>
+                        </div>
+                        <button @click="completePOSCheckout()" :disabled="posCart.length === 0" class="w-full bg-green-600 text-white py-3 rounded-xl text-sm font-bold shadow hover:bg-green-700 disabled:opacity-50 transition">
+                            Complete Checkout & Sync Inventory <i class="fa-solid fa-check ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendor Onboarding & Leases Tab -->
+            <div x-show="facilityTab === 'vendors'" class="space-y-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6">
+                    <div class="flex
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Booth Number Assignment</label>
+                                <input type="text" placeholder="e.g. Booth #14" class="w-full border rounded-xl px-3 py-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Account Tier</label>
+                                <select class="w-full border rounded-xl px-3 py-2 text-sm">
+                                    <option>Storefront + Booth Account ($29/mo)</option>
+                                    <option>Booth Account Only ($0/mo)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-xl border space-y-3">
+                            <h4 class="text-xs font-bold text-gray-700 uppercase">Primary Vendor Details & Co-Occupants (Up to 4)</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input type="text" placeholder="Primary First & Last Name" class="border rounded-lg px-3 py-2 text-xs bg-white">
+                                <input type="text" placeholder="Email Address" class="border rounded-lg px-3 py-2 text-xs bg-white">
+                                <input type="text" placeholder="Phone Number" class="border rounded-lg px-3 py-2 text-xs bg-white">
+                                <input type="text" placeholder="SSN / Tax ID Information" class="border rounded-lg px-3 py-2 text-xs bg-white">
+                            </div>
+                        </div>
+                        <button @click="alert('Electronic lease agreement triggered successfully to all listed signers!')" class="w-full bg-brand-600 text-white py-3 rounded-xl text-sm font-semibold shadow hover:bg-brand-700 transition">
+                            Trigger Electronic Lease Agreement (Auto-Populated) <i class="fa-solid fa-signature ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 4. GLOBAL ADMIN PORTAL VIEW -->
+        <!-- ========================================== -->
+        <div x-show="currentRole === 'global'" x-cloak class="space-y-6">
+            <!-- Global Header -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Global Admin Master Dashboard</h2>
+                    <p class="text-sm text-gray-500">Managing 33 Regional Facilities Across Tri-State & NWA Corridors (75% Storefront Model)</p>
+                </div>
+                <div class="bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow">
+                    Total ARR: $376,317 / year
+                </div>
+            </div>
+
+            <!-- Financial Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                    <span class="text-xs text-gray-500 font-semibold">Total Facilities</span>
+                    <h3 class="text-3xl font-bold text-gray-900 mt-1">33</h3>
+                    <p class="text-[10px] text-green-600 mt-1"><i class="fa-solid fa-arrow-up mr-1"></i> 100% Operational</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                    <span class="text-xs text-gray-500 font-semibold">Total Booths</span>
+                    <h3 class="text-3xl font-bold text-gray-900 mt-1">1,410</h3>
+                    <p class="text-[10px] text-gray-500 mt-1">Across 4-state corridor</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                    <span class="text-xs text-gray-500 font-semibold">Storefront Attach Rate (75%)</span>
+                    <h3 class="text-3xl font-bold text-brand-600 mt-1">1,057</h3>
+                    <p class="text-[10px] text-gray-500 mt-1">Active Pro Vendors ($29/mo)</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                    <span class="text-xs text-gray-500 font-semibold">Global Monthly MRR</span>
+                    <h3 class="text-3xl font-bold text-green-700 mt-1">$31,359</h3>
+                    <p class="text-[10px] text-green-600 mt-1"><i class="fa-solid fa-shield-halved mr-1"></i> 92.3% Gross Margin</p>
+                </div>
+            </div>
+
+            <!-- Regional Facilities Table -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                <h3 class="font-bold text-lg mb-4">Master Regional Facilities Directory (33 Locations)</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-gray-50 border-b text-gray-500 uppercase tracking-wider">
+                                <th class="p-3">Facility Name</th>
+                                <th class="p-3">Location</th>
+                                <th class="p-3">Booths</th>
+                                <th class="p-3">Subscription Tier</th>
+                                <th class="p-3">Monthly Facility Rev</th>
+                                <th class="p-3">Storefront Share (75/25)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <template x-for="fac in facilities" :key="fac.id">
+                                <tr>
+                                    <td class="p-3 font-bold text-gray-900" x-text="fac.name"></td>
+                                    <td class="p-3" x-text="fac.city + ', ' + fac.state"></td>
+                                    <td class="p-3 font-semibold" x-text="fac.booths"></td>
+                                    <td class="p-3"><span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium" x-text="fac.tier"></span></td>
+                                    <td class="p-3 font-bold" x-text="fac.rev"></td>
+                                    <td class="p-3 text-green-700 font-semibold">Active Split</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ALPINE STATE LOGIC -->
+    <script>
+        function appState() {
+            return {
+                currentRole: 'customer',
+                customerMode: 'hunter',
+                customerTab: 'facilities',
+                vendorTab: 'inventory',
+                facilityTab: 'pos',
+                activeBoothWorkspace: 'joplin_12',
+                routeStops: [1, 3],
+                posScanInput: '',
+                posSubtotal: 145.00,
+                posCart: [
+                    { id: 1, name: '19th Century Cast Iron Skillet', booth: 'Booth #12', price: 45.00 },
+                    { id: 2, name: 'Vintage Pyrex Mixing Bowl Set', booth: 'Booth #04', price: 100.00 }
+                ],
+                newInventory: {
+                    name: '',
+                    type: 'Antique',
+                    circa: '1900\'s',
+                    price: '',
+                    description: '',
+                    cost: '',
+                    taxPaid: '',
+                    purchaseDate: ''
+                },
+                newBlastContent: '',
+                facilities: [
+                    { id: 1, name: 'Rangeline Antique Mall', city: 'Joplin', state: 'MO', address: '2019 S Rangeline Rd', booths: 120, hours: '10 AM - 6 PM', tier: 'Professional ($299)', rev: '$299' },
+                    { id: 2, name: 'Southside Antique Mall', city: 'Joplin', state: 'MO', address: '3201 E 7th St', booths: 95, hours: '9 AM - 5 PM', tier: 'Professional ($299)', rev: '$299' },
+                    { id: 3, name: 'Carthage Square Antiques', city: 'Carthage', state: 'MO', address: '300 S Main St', booths: 60, hours: '10 AM - 5 PM', tier: 'Standard ($149)', rev: '$149' },
+                    { id: 4, name: 'Rose Antique Mall', city: 'Rogers', state: 'AR', address: '2000 S Philpott Rd', booths: 140, hours: '9 AM - 6 PM', tier: 'Professional ($299)', rev: '$299' },
+                    { id: 5, name: 'Fayetteville Square Market', city: 'Fayetteville', state: 'AR', address: '101 E Mountain St', booths: 180, hours: '8 AM - 4 PM', tier: 'Enterprise ($499)', rev: '$499' }
+                ],
+                vendorFeeds: [
+                    { id: 1, vendor: 'Little Turtle Antiques', booth: 'Booth #12 (Rangeline)', content: 'Just added pristine 19th-century cast iron cookware and vintage Pyrex. Fresh flash drop for weekend hunters!', price: '$45.00 - $120.00', tag: 'Flash Drop', images: [1, 2] },
+                    { id: 2, vendor: 'Ozark Heirloom Goods', booth: 'Booth #04 (Carthage)', content: 'Handmade artisanal leather crafts and reclaimed wood shelves now stocked.', price: '$35.00 - $250.00', tag: 'Handmade', images: [1, 2] }
+                ],
+                vendorInventory: [
+                    { id: 1, name: '19th Century Cast Iron Skillet', type: 'Antique', circa: '1900\'s', price: '$45.00', cost: '$15.00' },
+                    { id: 2, name: 'Vintage Pyrex Mixing Bowl Set', type: 'Collectible', circa: '1960\'s', price: '$100.00', cost: '$40.00' }
+                ],
+                getFacility(id) {
+                    return this.facilities.find(f => f.id === id) || { name: 'Facility', city: '' };
+                },
+                toggleRouteStop(fac) {
+                    if (this.routeStops.includes(fac.id)) {
+                        this.routeStops = this.routeStops.filter(id => id !== fac.id);
+                    } else {
+                        this.routeStops.push(fac.id);
+                    }
+                },
+                saveInventoryItem() {
+                    if(!this.newInventory.name || !this.newInventory.price) {
+                        alert('Please enter a product name and retail price.');
+                        return;
+                    }
+                    this.vendorInventory.push({
+                        id: Date.now(),
+                        name: this.newInventory.name,
+                        type: this.newInventory.type,
+                        circa: this.newInventory.circa,
+                        price: '$' + Number(this.newInventory.price).toFixed(2),
+                        cost: '$' + Number(this.newInventory.cost || 0).toFixed(2)
+                    });
+                    alert('Item saved successfully to Store Inventory and 0.5" x 0.5" Barcode generated!');
+                    this.newInventory.name = '';
+                    this.newInventory.price = '';
+                    this.newInventory.description = '';
+                },
+                publishBlast() {
+                    if(!this.newBlastContent) {
+                        alert('Please enter broadcast content.');
+                        return;
+                    }
+                    this.vendorFeeds.unshift({
+                        id: Date.now(),
+                        vendor: 'Little Turtle Antiques',
+                        booth: 'Booth #12 (Rangeline)',
+                        content: this.newBlastContent,
+                        price: 'Various Items',
+                        tag: 'New Broadcast',
+                        images: [1, 2]
+                    });
+                    alert('Broadcast successfully sent to all subscribed customers and followers!');
+                    this.newBlastContent = '';
+                },
+                simulateScan() {
+                    if(!this.posScanInput) return;
+                    this.posCart.push({
+                        id: Date.now(),
+                        name: 'Scanned Antique Item (' + this.posScanInput + ')',
+                        booth: 'Booth #12',
+                        price: 65.00
+                    });
+                    this.posSubtotal += 65.00;
+                    this.posScanInput = '';
+                },
+                completePOSCheckout() {
+                    alert('Checkout complete! Commission and rent deducted, inventory removed in real-time from customer storefronts, and P&L reports updated.');
+                    this.posCart = [];
+                    this.posSubtotal = 0;
+                }
+            }
+        }
+    </script>
+</body>
+</html>  
